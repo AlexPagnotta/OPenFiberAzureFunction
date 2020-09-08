@@ -22,8 +22,12 @@ namespace AlexPagnotta.Function
             var context = BrowsingContext.New(config);
             // This is where the HTTP request happens, returns <IDocument> that // we can query later
             var document = context.OpenAsync(url).Result;
+
+            var connectionStatusElementParent = document.QuerySelector(".search-by-address.covered-type");
+            var connectionStatusString = connectionStatusElementParent.QuerySelector("strong");
+
             // Log the data to the console
-            log.LogInformation(document.DocumentElement.OuterHtml);
+            log.LogInformation(connectionStatusString.InnerHtml);
         }
     }
 }
