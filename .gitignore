@@ -262,3 +262,12 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+__azurite_db_blob__.json
+
+__azurite_db_blob_extent__.json
+
+__azurite_db_queue__.json
+
+__azurite_db_queue_extent__.json
+
+__blobstorage__/7a4bb9e5-31b8-4b7a-9d2a-3e09a4342f7a

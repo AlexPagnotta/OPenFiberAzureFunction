@@ -10,9 +10,9 @@ namespace AlexPagnotta.Function
     public static class OpenFiberFunction
     {
         [FunctionName("OpenFiberFunction")]
-        public void Run([TimerTrigger("0 0 5 * * *")]TimerInfo myTimer, ILogger log)
+        public static void Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            var url = "https://openfiber.it/verifica-copertura/umbria/terni/fabro/?egon_id_for_civic=380100091821085&egon_id_for_address=38000648389&cityID=4805&street=via%20vittorio%20veneto&civic=31&cap=05015"
+            var url = @"https://openfiber.it/verifica-copertura/umbria/terni/fabro/?egon_id_for_civic=380100091821085&egon_id_for_address=38000648389&cityID=4805&street=via%20vittorio%20veneto&civic=31&cap=05015";
             
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
