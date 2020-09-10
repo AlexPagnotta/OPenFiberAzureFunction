@@ -7,10 +7,15 @@ using AngleSharp.Html.Parser;
 
 namespace AlexPagnotta.Function
 {
-    public static class OpenFiberFunction
+    public class OpenFiberFunction
     {
+        
+        public OpenFiberFunction()
+        {
+        }
+        
         [FunctionName("OpenFiberFunction")]
-        public static void Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, ILogger log)
+        public void Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, ILogger log)
         {
 
             log.LogInformation($"Starting Open Fiber Function at: {DateTime.Now}");
