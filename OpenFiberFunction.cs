@@ -12,41 +12,52 @@ namespace AlexPagnotta.Function
         [FunctionName("OpenFiberFunction")]
         public static void Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            var url = Environment.GetEnvironmentVariable("OpenFiberUrl");
-            var FTTHCoverageString = Environment.GetEnvironmentVariable("FTTHCoverageString");
-            var FWACoverageString = Environment.GetEnvironmentVariable("FWACoverageString");
-            var NOCoverageString = Environment.GetEnvironmentVariable("NOCoverageString");
-            
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            // Load default configuration
+            log.LogInformation($"Starting Open Fiber Function at: {DateTime.Now}");
+
+            // Getting variables from Json 
+
+            // Url of the open fiber coverage page
+            var url = Environment.GetEnvironmentVariable("OpenFiberUrl");
+
+            // This strings identifies if you are covered and by wich technology
+            var FTTHCoverageString = Environment.GetEnvironmentVariable("FTTHCoverageStringIdentifier");
+            var FWACoverageString = Environment.GetEnvironmentVariable("FWACoverageStringIdentifier");
+            var NOCoverageString = Environment.GetEnvironmentVariable("NOCoverageStringIdentifier");
+            
+            // This strings identifies the elements selectors on the page, needed to obtain the string that indicates the coverage
+            var parentElementIdentifier = Environment.GetEnvironmentVariable("AngleSharp_ParentElementIdentifier");
+            var coverageStringElementIdentifier = Environment.GetEnvironmentVariable("AngleSharp_CoverageStringElementIdentifier");
+
+            // Angle Sharp Config
+
+            // Load default configuration and open context
             var config = Configuration.Default.WithDefaultLoader();
-            // Create a new browsing context
             var context = BrowsingContext.New(config);
-            // This is where the HTTP request happens, returns <IDocument> that // we can query later
+
+            // Parse the page by Url in a document
             var document = context.OpenAsync(url).Result;
 
-            var connectionStatusElementParent = document.QuerySelector(".search-by-address.covered-type");
-            var connectionStatusString = connectionStatusElementParent.QuerySelector("strong");
+            //Get elements from the page, and the coverage string
+            var coverageElementParent = document.QuerySelector(parentElementIdentifier);
+            var coverageStringElement = coverageElementParent.QuerySelector(coverageStringElementIdentifier);
 
-            var coverageString = connectionStatusString.InnerHtml;
+            var coverageString = coverageStringElement.InnerHtml;
 
-            // Log the data to the console
-            log.LogInformation(coverageString);
-
-            var emailString = "";
+            //Define and assign the type of coverage
+            CoverageEnum coverageEnum;
 
             if(coverageString == FTTHCoverageString){
-                emailString = "Finally FTTH!";
+                coverageEnum = CoverageEnum.FTTH;
             }
             else if(coverageString == FWACoverageString){
-                emailString = "FWA, Nothing Changed";
+                coverageEnum = CoverageEnum.FWA;
             }
             else if(coverageString == NOCoverageString){
-                emailString = "What, No Coverage Now?";
+                coverageEnum = CoverageEnum.NoCoverage;
             }
             else{
-                //Exception;
+                log.LogError($"The string {coverageString} is not expected, and it's not possible identify the coverage.");
             }
 
             
