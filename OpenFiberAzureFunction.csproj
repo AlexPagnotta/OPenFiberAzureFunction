@@ -4,8 +4,9 @@
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.14.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
+    <PackageReference Include="AngleSharp" Version="0.14.0"/>
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7"/>
+    <PackageReference Include="SendGrid" Version="9.21.0"/>
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
