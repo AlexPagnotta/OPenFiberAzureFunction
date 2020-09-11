@@ -4,14 +4,17 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using AngleSharp;
 using AngleSharp.Html.Parser;
+using Microsoft.Extensions.Options;
 
 namespace AlexPagnotta.Function
 {
     public class OpenFiberFunction
     {
-        
-        public OpenFiberFunction()
+        private readonly Settings _settings;
+
+        public OpenFiberFunction(IOptionsMonitor<Settings> settings)
         {
+            _settings = settings.CurrentValue;
         }
         
         [FunctionName("OpenFiberFunction")]
