@@ -1,10 +1,13 @@
 using System;
+using System.Linq;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using AngleSharp;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Options;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace AlexPagnotta.Function
 {
@@ -57,9 +60,24 @@ namespace AlexPagnotta.Function
             }
             else{
                 log.LogError($"The string {coverageString} is not expected, and it's not possible identify the coverage.");
-            }
+            }         
 
-            
+            //SendGrid
+
+            var client = new SendGridClient(_sendGridSettings.SendGrid_API_KEY);
+            var msg = new SendGridMessage();
+
+            msg.SetFrom(new EmailAddress(_sendGridSettings.SendGrid_Sender, "TEST"));
+
+            var recipients =_sendGridSettings.SendGrid_Receivers.Select(s => new EmailAddress(s.Email)).ToList();
+
+            msg.AddTos(recipients);
+
+            msg.SetSubject("Mail from Azure and SendGrid");
+
+            msg.AddContent(MimeType.Text, "This is just a simple test message!");
+            msg.AddContent(MimeType.Html, "<p>This is just a simple test message!</p>");
+            var response = client.SendEmailAsync(msg);
         }
     }
 }
