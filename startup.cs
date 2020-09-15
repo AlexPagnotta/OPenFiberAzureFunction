@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using AlexPagnotta.Function;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace AlexPagnotta.Function
@@ -13,19 +14,16 @@ namespace AlexPagnotta.Function
         public override void Configure(IFunctionsHostBuilder builder)
         {
 
-            // this will bind to the "Values" section of the configuration
-            builder
-                .Services
-                .AddOptions<Settings>()
-                .Configure<IConfiguration>((settings, configuration) => { configuration.Bind(settings); });
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Environment.CurrentDirectory)
+                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
 
-            // this will bind to a specific section of the configuration
-            // by using the section name, in this case "ConnectionStrings"
-            /*builder
-                .Services
-                .AddOptions<ConnectionStrings>()
-                .Configure<IConfiguration>((settings, configuration) => { configuration.Bind("ConnectionStrings", settings); });*/
+            builder.Services.Configure<Settings>(configuration.GetSection("Values"));
 
+            builder.Services.Configure<SendGridSettings>(configuration.GetSection("SendGrid"));
+      
         }
     }
 }

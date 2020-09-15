@@ -11,10 +11,15 @@ namespace AlexPagnotta.Function
     public class OpenFiberFunction
     {
         private readonly Settings _settings;
+        private readonly SendGridSettings _sendGridSettings;
 
-        public OpenFiberFunction(IOptionsMonitor<Settings> settings)
+        public OpenFiberFunction(
+            IOptionsMonitor<Settings> settings,
+            IOptionsMonitor<SendGridSettings> sendGridSettings
+            )
         {
             _settings = settings.CurrentValue;
+            _sendGridSettings = sendGridSettings.CurrentValue;
         }
         
         [FunctionName("OpenFiberFunction")]
@@ -23,20 +28,6 @@ namespace AlexPagnotta.Function
 
             log.LogInformation($"Starting Open Fiber Function at: {DateTime.Now}");
 
-            // Getting variables from Json 
-
-            // Url of the open fiber coverage page
-            var url = Environment.GetEnvironmentVariable("OpenFiberUrl");
-
-            // This strings identifies if you are covered and by wich technology
-            var FTTHCoverageString = Environment.GetEnvironmentVariable("FTTHCoverageStringIdentifier");
-            var FWACoverageString = Environment.GetEnvironmentVariable("FWACoverageStringIdentifier");
-            var NOCoverageString = Environment.GetEnvironmentVariable("NOCoverageStringIdentifier");
-            
-            // This strings identifies the elements selectors on the page, needed to obtain the string that indicates the coverage
-            var parentElementIdentifier = Environment.GetEnvironmentVariable("AngleSharp_ParentElementIdentifier");
-            var coverageStringElementIdentifier = Environment.GetEnvironmentVariable("AngleSharp_CoverageStringElementIdentifier");
-
             // Angle Sharp Config
 
             // Load default configuration and open context
@@ -44,24 +35,24 @@ namespace AlexPagnotta.Function
             var context = BrowsingContext.New(config);
 
             // Parse the page by Url in a document
-            var document = context.OpenAsync(url).Result;
+            var document = context.OpenAsync(_settings.OpenFiberUrl).Result;
 
             //Get elements from the page, and the coverage string
-            var coverageElementParent = document.QuerySelector(parentElementIdentifier);
-            var coverageStringElement = coverageElementParent.QuerySelector(coverageStringElementIdentifier);
+            var coverageElementParent = document.QuerySelector(_settings.AngleSharp_ParentElementIdentifier);
+            var coverageStringElement = coverageElementParent.QuerySelector(_settings.AngleSharp_CoverageStringElementIdentifier);
 
             var coverageString = coverageStringElement.InnerHtml;
 
             //Define and assign the type of coverage
             CoverageEnum coverageEnum;
 
-            if(coverageString == FTTHCoverageString){
+            if(coverageString == _settings.FTTHCoverageStringIdentifier){
                 coverageEnum = CoverageEnum.FTTH;
             }
-            else if(coverageString == FWACoverageString){
+            else if(coverageString == _settings.FWACoverageStringIdentifier){
                 coverageEnum = CoverageEnum.FWA;
             }
-            else if(coverageString == NOCoverageString){
+            else if(coverageString == _settings.NOCoverageStringIdentifier){
                 coverageEnum = CoverageEnum.NoCoverage;
             }
             else{
