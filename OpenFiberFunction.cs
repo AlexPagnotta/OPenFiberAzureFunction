@@ -1,13 +1,8 @@
 using System;
-using System.Linq;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using AngleSharp;
-using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Options;
-using SendGrid;
-using SendGrid.Helpers.Mail;
 
 namespace AlexPagnotta.Function
 {
@@ -31,6 +26,27 @@ namespace AlexPagnotta.Function
 
             log.LogInformation($"Starting Open Fiber Function at: {DateTime.Now}");
 
+            //Get the coverage from the page
+            var coverageEnum = GetCoverageFromPageUrl(_settings.OpenFiberUrl);
+
+            //Build email content
+            var emailContent = BuildEmailFromCoverageEnum(coverageEnum); 
+
+            //Send the email with SendGrid
+
+            var emailSender = new EmailSender(
+                _sendGridSettings.SendGrid_API_KEY, 
+                _sendGridSettings.SendGrid_Sender, 
+                _sendGridSettings.SendGrid_Recipients
+                );
+
+            emailSender.SendEmail(emailContent.subject, emailContent.content).GetAwaiter().GetResult();
+
+        }
+
+        
+        public CoverageEnum GetCoverageFromPageUrl(string pageUrl) {
+
             // Angle Sharp Config
 
             // Load default configuration and open context
@@ -38,7 +54,7 @@ namespace AlexPagnotta.Function
             var context = BrowsingContext.New(config);
 
             // Parse the page by Url in a document
-            var document = context.OpenAsync(_settings.OpenFiberUrl).Result;
+            var document = context.OpenAsync(pageUrl).Result;
 
             //Get elements from the page, and the coverage string
             var coverageElementParent = document.QuerySelector(_settings.AngleSharp_ParentElementIdentifier);
@@ -59,25 +75,36 @@ namespace AlexPagnotta.Function
                 coverageEnum = CoverageEnum.NoCoverage;
             }
             else{
-                log.LogError($"The string {coverageString} is not expected, and it's not possible identify the coverage.");
-            }         
+                throw new Exception($"The string {coverageString} is not expected, and it's not possible to identify the coverage.");
+            }       
 
-            //SendGrid
+            return coverageEnum;
+        }
 
-            var client = new SendGridClient(_sendGridSettings.SendGrid_API_KEY);
-            var msg = new SendGridMessage();
 
-            msg.SetFrom(new EmailAddress(_sendGridSettings.SendGrid_Sender, "TEST"));
+        public (string subject, string content) BuildEmailFromCoverageEnum(CoverageEnum coverageEnum){
 
-            var recipients =_sendGridSettings.SendGrid_Receivers.Select(s => new EmailAddress(s.Email)).ToList();
+            var subject = "";
+            var content = "";
 
-            msg.AddTos(recipients);
+            switch (coverageEnum)
+            {
+                case CoverageEnum.FTTH:
+                    subject = "Sei connesso in FTTH!";
+                    content = "Sei connesso in FTTH!";
+                    break;
+                case CoverageEnum.FWA:
+                    subject = "Sei connesso in FWA.";
+                    content = "Sei connesso in FWA.";
+                    break;
+                case CoverageEnum.NoCoverage:
+                    subject = "Mi dispiace, non sei connesso...";
+                    content = "Mi dispiace, non sei connesso...";
+                    break;
+            }
 
-            msg.SetSubject("Mail from Azure and SendGrid");
+            return (subject, content);
 
-            msg.AddContent(MimeType.Text, "This is just a simple test message!");
-            msg.AddContent(MimeType.Html, "<p>This is just a simple test message!</p>");
-            var response = client.SendEmailAsync(msg);
         }
     }
 }

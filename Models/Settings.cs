@@ -14,12 +14,6 @@ public class Settings
 public class SendGridSettings
 {
     public string SendGrid_API_KEY { get; set; }
-    public string SendGrid_Sender { get; set; }
-    public List<SendGridReceiver> SendGrid_Receivers { get; set; }
-}
-
-public class SendGridReceiver 
-{
-    public string Email { get; set; }
-    public string Name { get; set; }
+    public SendGridEmailUser SendGrid_Sender { get; set; }
+    public List<SendGridEmailUser> SendGrid_Recipients { get; set; }
 }
