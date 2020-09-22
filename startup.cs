@@ -20,9 +20,32 @@ namespace AlexPagnotta.Function
                 .AddEnvironmentVariables()
                 .Build();
 
-            builder.Services.Configure<Settings>(configuration.GetSection("Values"));
+            builder.Services.Configure<Settings>(s=>
+            {
+                s.OpenFiberAddress = Environment.GetEnvironmentVariable("OpenFiberAddress");
+                s.OpenFiberAddressUrl = Environment.GetEnvironmentVariable("OpenFiberAddressUrl");
+                s.FWACoverageStringIdentifier = Environment.GetEnvironmentVariable("FWACoverageStringIdentifier");
+                s.FTTHCoverageStringIdentifier = Environment.GetEnvironmentVariable("FTTHCoverageStringIdentifier");
+                s.NOCoverageStringIdentifier = Environment.GetEnvironmentVariable("NOCoverageStringIdentifier");
+                s.ParentElementIdentifier = Environment.GetEnvironmentVariable("ParentElementIdentifier");
+                s.CoverageStringElementIdentifier = Environment.GetEnvironmentVariable("CoverageStringElementIdentifier");
+            });
 
-            builder.Services.Configure<SendGridSettings>(configuration.GetSection("SendGrid"));
+            builder.Services.Configure<SendGridSettings>(sg=>
+            {
+                sg.API_KEY = Environment.GetEnvironmentVariable("SendGrid:API_KEY");  
+
+                sg.Sender = new SendGridEmailUser(
+                        Environment.GetEnvironmentVariable("SendGrid:Sender:Email"),
+                        Environment.GetEnvironmentVariable("SendGrid:Sender:Name")
+                    );    
+
+                sg.Recipient = new SendGridEmailUser(
+                        Environment.GetEnvironmentVariable("SendGrid:Recipient:Email"),
+                        Environment.GetEnvironmentVariable("SendGrid:Recipient:Name")
+                    );           
+                             
+            });
       
         }
     }

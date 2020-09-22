@@ -19,25 +19,25 @@ namespace AlexPagnotta.Function
             _settings = settings.CurrentValue;
             _sendGridSettings = sendGridSettings.CurrentValue;
         }
-        
+
         [FunctionName("OpenFiberFunction")]
-        public void Run([TimerTrigger("*/5 * * * *")]TimerInfo myTimer, ILogger log)
+        public void Run([TimerTrigger("0 4 00 * * 0-5")]TimerInfo myTimer, ILogger log)
         {
 
             log.LogInformation($"Starting Open Fiber Function at: {DateTime.Now}");
 
             //Get the coverage from the page
-            var coverageEnum = GetCoverageFromPageUrl(_settings.OpenFiberUrl);
+            var coverageEnum = GetCoverageFromPageUrl(_settings.OpenFiberAddressUrl);
 
             //Build email content
-            var emailContent = BuildEmailFromCoverageEnum(coverageEnum); 
+            var emailContent = BuildEmail(_settings.OpenFiberAddress, coverageEnum); 
 
             //Send the email with SendGrid
 
             var emailSender = new EmailSender(
-                _sendGridSettings.SendGrid_API_KEY, 
-                _sendGridSettings.SendGrid_Sender, 
-                _sendGridSettings.SendGrid_Recipients
+                _sendGridSettings.API_KEY, 
+                _sendGridSettings.Sender, 
+                _sendGridSettings.Recipient
                 );
 
             emailSender.SendEmail(emailContent.subject, emailContent.content).GetAwaiter().GetResult();
@@ -57,8 +57,8 @@ namespace AlexPagnotta.Function
             var document = context.OpenAsync(pageUrl).Result;
 
             //Get elements from the page, and the coverage string
-            var coverageElementParent = document.QuerySelector(_settings.AngleSharp_ParentElementIdentifier);
-            var coverageStringElement = coverageElementParent.QuerySelector(_settings.AngleSharp_CoverageStringElementIdentifier);
+            var coverageElementParent = document.QuerySelector(_settings.ParentElementIdentifier);
+            var coverageStringElement = coverageElementParent.QuerySelector(_settings.CoverageStringElementIdentifier);
 
             var coverageString = coverageStringElement.InnerHtml;
 
@@ -82,8 +82,9 @@ namespace AlexPagnotta.Function
         }
 
 
-        public (string subject, string content) BuildEmailFromCoverageEnum(CoverageEnum coverageEnum){
+        public (string subject, string content) BuildEmail(string openFiberAddress, CoverageEnum coverageEnum){
 
+            //Define subjec and content based on the coverage enum
             var subject = "";
             var content = "";
 
@@ -91,15 +92,15 @@ namespace AlexPagnotta.Function
             {
                 case CoverageEnum.FTTH:
                     subject = "Sei connesso in FTTH!";
-                    content = "Sei connesso in FTTH!";
+                    content = $"Il tuo indirizzo {openFiberAddress} è connesso in FTTH!";
                     break;
                 case CoverageEnum.FWA:
                     subject = "Sei connesso in FWA.";
-                    content = "Sei connesso in FWA.";
+                    content = $"Il tuo indirizzo {openFiberAddress} è connesso in FWA!";
                     break;
                 case CoverageEnum.NoCoverage:
                     subject = "Mi dispiace, non sei connesso...";
-                    content = "Mi dispiace, non sei connesso...";
+                    content = $"Il tuo indirizzo {openFiberAddress} non è ancora coperto!";
                     break;
             }
 
