@@ -7,16 +7,16 @@ using System.Linq;
 public class EmailSender
 {   
     private SendGridClient _client;
-    private SendGridEmailUser _senderEmail;
-    private List<SendGridEmailUser> _recipients;
+    private SendGridEmailUser _sender;
+    private SendGridEmailUser _recipient;
 
     public EmailSender(
         string apiKey, 
-        SendGridEmailUser senderEmail,
-        List<SendGridEmailUser> recipients
+        SendGridEmailUser sender,
+        SendGridEmailUser recipient
     ){
-        _senderEmail = senderEmail;
-        _recipients = recipients;
+        _sender = sender;
+        _recipient = recipient;
 
         _client = new SendGridClient(apiKey);
     }
@@ -28,11 +28,11 @@ public class EmailSender
 
         var msg = new SendGridMessage();
 
-        msg.SetFrom(new EmailAddress(_senderEmail.Email, _senderEmail.Name));
+        msg.SetFrom(new EmailAddress(_sender.Email, _sender.Name));
 
-        var recipients = _recipients.Select(r => new EmailAddress(r.Email, r.Name)).ToList();
+        var recipient = new EmailAddress(_recipient.Email, _recipient.Name);
 
-        msg.AddTos(recipients);
+        msg.AddTo(recipient);
 
         msg.SetSubject(subject);
 
