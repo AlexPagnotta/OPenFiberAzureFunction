@@ -21,7 +21,7 @@ namespace AlexPagnotta.Function
         }
 
         [FunctionName("OpenFiberFunction")]
-        public void Run([TimerTrigger("0 7 30 * * 0-5")]TimerInfo myTimer, ILogger log)
+        public void Run([TimerTrigger("0 0 4 * * 1-5")]TimerInfo myTimer, ILogger log)
         {
 
             log.LogInformation($"Starting Open Fiber Function at: {DateTime.Now}");
